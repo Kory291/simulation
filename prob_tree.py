@@ -1,31 +1,91 @@
-pool = {
+import sys
+
+ball_pool = {
     "green": 3,
     "blue": 2,
-    "red": 5
+    "red": 5,
+    "yellow": 10,
+    "orange": 7
 }
+
+class Tree:
+
+    def __init__(self, pool, depth) -> None:
+        self.children = []
+        self.root = None
+        self.pool = pool
+        self.depth = depth
+        for key, val in self.pool.items():
+            new_pool = self.pool.copy()
+            if val > 1:
+                new_pool.update({key: val - 1})
+            else:
+                new_pool.pop(key)
+            self.children.append(
+                Node(
+                    self,
+                    new_pool,
+                    val / sum(list(self.pool.values())),
+                    key,
+                    1,
+                    depth
+                )
+            )
+
+    
+    def get_all_paths(self) -> list[str]:
+        paths = []
+        for child in self.children:
+            paths.append(child.get_path(""))
+
+        
 
 class Node:
     
-    _pool: dict
-    _children: list
-    _probability: float
-    _value: str
+    def __init__(self, parent, pool, probability, value, current_depth, max_depth) -> None:
+        self.parent = parent
+        self.children = []
+        # self.pool = pool.copy()
+        self.pool = pool
+        self.is_last = False
+        if self.pool == {} or current_depth == max_depth:
+            self.is_last = True
+        self.probability = probability
+        self.value = value
+        self.current_depth = current_depth
+        self.max_depth = max_depth
+        # add children
+        if current_depth < max_depth:
+            for key, val in self.pool.items():
+                new_pool = self.pool.copy()
+                if val > 1:
+                    new_pool.update({key: val - 1})
+                else:
+                    new_pool.pop(key)
+                self.children.append(
+                    Node(
+                        self,
+                        new_pool,
+                        val / sum(list(self.pool.values())),
+                        key,
+                        current_depth + 1,
+                        max_depth
+                    )
+                )
+        
+    def is_last(self) -> bool:
+        return self.is_last
+    
+    def get_path(self, current_path: str) -> str:
+        paths = []
+        path = f"{current_path} {self.value}"
+        print(id(paths))
+        if not self.is_last:
+            for child in self.children:
+                paths.append(child.get_path(path))
+        if self.is_last:
+            print("Last Node")
+            return path
 
-    def __init__(self, value: str, pool: dict):
-        self._pool = pool.copy()
-        print(id(pool), id(self._pool))
-        self._value = value
-        all_elements = sum(list(self._pool.values()))
-        self._probability = self._pool.get(self._value) / all_elements
-        if self._pool.get(self._value) > 1:
-            self._pool.update({self._value: self._pool.get(self._value) - 1})
-        else:
-            self._pool.pop(self._value)
-        self._children = []
-        for key, val in self._pool.items():
-            self._children.append(Node(key, self._pool))
-            
-    def _isLast(self):
-        return len(list(self._pool.items())) == 0
-
-Node("green", pool)
+tree = Tree(ball_pool, 4)
+print(tree.get_all_paths())
