@@ -33,10 +33,11 @@ class Tree:
             )
 
     
-    def get_all_paths(self) -> list[str]:
-        paths = []
+    def get_all_paths(self) -> str:
+        all_paths = []
         for child in self.children:
-            paths.append(child.get_path(""))
+            all_paths.extend(child.get_path(""))
+        return "\n".join(all_paths)
 
         
 
@@ -79,13 +80,12 @@ class Node:
     def get_path(self, current_path: str) -> str:
         paths = []
         path = f"{current_path} {self.value}"
-        print(id(paths))
         if not self.is_last:
             for child in self.children:
-                paths.append(child.get_path(path))
+                paths.extend(child.get_path(path))
+            return paths
         if self.is_last:
-            print("Last Node")
-            return path
+            return [path]
 
 tree = Tree(ball_pool, 4)
 print(tree.get_all_paths())
